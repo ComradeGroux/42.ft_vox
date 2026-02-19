@@ -16,3 +16,15 @@ cd ../../
 python3 -m venv .venv
 .venv/bin/pip install glad --quiet
 .venv/bin/glad --profile core --api gl=4.6 --generator c --out-path build/glad
+
+cd deps
+git clone --depth=1 --branch v6.0.4 git@github.com:assimp/assimp.git
+cd assimp
+cmake CMakeLists.txt -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF
+mkdir -p ../../build/assimp && cd ../../build/assimp
+cmake --build ../../deps/assimp
+cp ../../deps/assimp/lib/libassimp.a .
+
+cd ..
+mkdir -p stb
+curl -o stb/stb_image.h https://raw.githubusercontent.com/nothings/stb/master/stb_image.h
