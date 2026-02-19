@@ -15,7 +15,7 @@ GLM_BUILD_DIR := $(BUILD_DIR)/glm
 GLM_LIB := $(GLM_BUILD_DIR)/glm/libglm.a
 
 ASSIMP_BUILD_DIR := $(BUILD_DIR)/assimp
-ASSIMP_LIB := $(ASSIMP_BUILD_DIR)/lib/libassimp.a
+ASSIMP_LIB := $(ASSIMP_BUILD_DIR)/libassimp.a
 
 
 TARGET := ft_vox
