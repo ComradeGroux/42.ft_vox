@@ -2,6 +2,6 @@
 This project aim to create proceduraly generated voxel world with C++ and OpenGL.
 
 
-Dependancies:
-	Python 3
+## Dependancies:
+	Python3
 	Make
