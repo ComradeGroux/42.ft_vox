@@ -102,6 +102,14 @@ float	SimplexNoise::noise2D(float x, float y) const
 	return 70.0f * (n0 + n1 + n2);
 }
 
+
+/**
+ * octaves:		number of layer of noise generated
+ * frequency:	zoom in/out
+ * amplitude:	control intensity of the layer
+ * lacunarity:	how much the frequency augment between layer
+ * persistence:	how much the amplitude augment between layer
+ */
 float	SimplexNoise::fractal2D(float x, float y, int octaves, float frequency, float amplitude, float lacunarity, float persistence) const
 {
 	float result   = 0.0f;
