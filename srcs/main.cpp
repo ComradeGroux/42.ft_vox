@@ -1,62 +1,40 @@
-
 #include "opengl.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
 #include <iostream>
-#include "error.hpp"
 
-unsigned int	validateArgument(int argc, char** argv)
+/**
+ * FNV-1a algorythm
+ *
+ * I choose this algorythm because it is know to be efficient
+ * and particularly simple
+ *
+ */
+uint64_t	hashSeed(const std::string& seed)
 {
-	if (argc != 2)
-		return WRONG_NUMBER_ARGUMENT_ID;
+	uint64_t hash = 14695981039346656037ULL; // FNV offset basis
 
-	if (strlen(argv[1]) < SEED_MIN_CHAR)
-		return SEED_TO_SMALL_ID;
-	else if (strlen(argv[1]) > SEED_MAX_CHAR)
-		return SEED_TO_BIG_ID;
-
-
-
-	return OK;
-}
-
-unsigned int	printErrorArgument(unsigned int err)
-{
-	switch (err)
+	for (char c : seed)
 	{
-		case OK:
-			return OK;
-
-		case WRONG_NUMBER_ARGUMENT_ID:
-			std::cerr << ERROR << WRONG_NUMBER_ARGUMENT_STR << std::endl;
-			break;
-
-		case SEED_TO_SMALL_ID:
-			std::cerr << ERROR << SEED_TO_SMALL_STR << std::endl;
-			break;
-		case SEED_TO_BIG_ID:
-			std::cerr << ERROR << SEED_TO_BIG_STR << std::endl;
-			break;
-
-
+		hash ^= static_cast<uint64_t>(c);
+		hash *= 1099511628211ULL;            // FNV prime
 	}
 
-
-
-	std::cout << USAGE << std::endl;
-	return err;
+	return hash;
 }
 
 int main(int argc, char** argv)
 {
-	int err = printErrorArgument(validateArgument(argc, argv));
-	if (err != OK)
-		return err;
+	if (argc != 2)
+	{
+		std::cerr << "Error: Wrong number of argument." << std::endl;
+		std::cout << "Usage: ./ft_vox <SEED>" << std::endl;
+		return 1;
+	}
 
-
+	std::cout << hashSeed(argv[1]) << std::endl;
 
 	return 0;
 }
