@@ -1,6 +1,6 @@
 TARGET := ft_vox
 
-CLASS_HEADERS := World
+CLASS_HEADERS := World Generator
 
 SRC_DIR := srcs
 BUILD_DIR := build
@@ -27,13 +27,15 @@ STB_LIB := $(STB_BUILD_DIR)/stb_image.h
 
 
 SRCS := $(wildcard $(SRC_DIR)/*.cpp) \
-		$(wildcard $(SRC_DIR)/World/*.cpp)
+		$(wildcard $(SRC_DIR)/World/*.cpp) \
+		$(wildcard $(SRC_DIR)/Generator/*.cpp)
 
 VPATH := $(dir $(SRCS))
 
+
 OBJS := $(addprefix $(OBJS_DIR)/, $(notdir $(SRCS:.cpp=.o)))
 
-CLASS_DIRS := $(addprefix $(SRC_DIR)/, $(CLASS_HEADERS))
+CLASS_DIRS := $(addprefix -I, $(addprefix $(SRC_DIR)/, $(CLASS_HEADERS)))
 
 #########################
 ### COMPILATION RULES ###
@@ -46,7 +48,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Werror -g \
 			-I$(GLAD_BUILD_DIR)/include/glad \
 			-I$(DEPS_DIR)/assimp/include \
 			-I$(STB_BUILD_DIR) \
-			-I$(CLASS_DIRS)
+			$(CLASS_DIRS)
 
 all: $(TARGET)
 

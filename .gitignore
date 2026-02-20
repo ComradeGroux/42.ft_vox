@@ -45,3 +45,4 @@ build/
 deps/
 ft_vox
 .venv/
+*/tmp/
