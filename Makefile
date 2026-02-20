@@ -1,5 +1,6 @@
 TARGET := ft_vox
 
+CLASS_HEADERS := World
 
 SRC_DIR := srcs
 BUILD_DIR := build
@@ -25,11 +26,14 @@ STB_BUILD_DIR := $(BUILD_DIR)/stb
 STB_LIB := $(STB_BUILD_DIR)/stb_image.h
 
 
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+SRCS := $(wildcard $(SRC_DIR)/*.cpp) \
+		$(wildcard $(SRC_DIR)/World/*.cpp)
 
-OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJS_DIR)/%.o)
+VPATH := $(dir $(SRCS))
 
+OBJS := $(addprefix $(OBJS_DIR)/, $(notdir $(SRCS:.cpp=.o)))
 
+CLASS_DIRS := $(addprefix $(SRC_DIR)/, $(CLASS_HEADERS))
 
 #########################
 ### COMPILATION RULES ###
@@ -41,7 +45,8 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Werror -g \
 			-I$(GLFW_BUILD_DIR)/include \
 			-I$(GLAD_BUILD_DIR)/include/glad \
 			-I$(DEPS_DIR)/assimp/include \
-			-I$(STB_BUILD_DIR)
+			-I$(STB_BUILD_DIR) \
+			-I$(CLASS_DIRS)
 
 all: $(TARGET)
 
@@ -49,7 +54,7 @@ $(TARGET): $(GLFW_LIB) $(GLM_LIB) $(GLAD_BUILD_DIR) $(ASSIMP_LIB) $(STB_LIB) $(O
 	@echo "→ Linking of $(TARGET)"
 	$(CXX) $(OBJS) $(GLAD_OBJ) $(GLFW_LIB) $(GLM_LIB) $(ASSIMP_LIB) $(LDFLAGS) -o $@
 
-$(OBJS_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(OBJS_DIR)/%.o: %.cpp
 	@mkdir -p $(OBJS_DIR)
 	@echo "→ Compilation of $<"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
