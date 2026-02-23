@@ -10,7 +10,7 @@ class World {
 		using ChunkMap = std::unordered_map<uint64_t, std::unique_ptr<Chunk>>;
 		ChunkMap	_chunks;
 
-		static	uint64_t	_chunkKey(int chunkX, int chunkY);
+		static	uint64_t	_chunkKey(int chunkX, int chunkZ);
 
 	public:
 		World(void);
@@ -19,8 +19,8 @@ class World {
 		VoxelType	get(int x, int y, int z) const;
 		void		set(int x, int y, int z, VoxelType type);
 
-		Chunk*			getChunk(int chunkX, int chunkY);
-		const Chunk*	getChunk(int chunkX, int chunkY) const;
+		Chunk*			getChunk(int chunkX, int chunkZ);
+		const Chunk*	getChunk(int chunkX, int chunkZ) const;
 
 		Chunk&	loadChunk(int chunkX, int chunkZ);
 		void	unloadChunk(int chunkX, int chunkZ);

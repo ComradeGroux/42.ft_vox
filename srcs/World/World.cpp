@@ -1,6 +1,12 @@
 #include "World.hpp"
 
-World::World() {}
+World::World(void)
+{
+}
+
+World::~World(void)
+{
+}
 
 uint64_t	World::_chunkKey(int chunkX, int chunkZ)
 {
@@ -45,8 +51,8 @@ bool	World::isChunkLoaded(int chunkX, int chunkZ) const
 
 VoxelType	World::get(int x, int y, int z) const
 {
-	int	chunkX = (int)std::floor((float)x / 16);
-	int	chunkZ = (int)std::floor((float)z / 16);
+	int	chunkX = x >> 4;
+	int	chunkZ = z >> 4;
 	int	localX = x - chunkX * 16;
 	int	localZ = z - chunkZ * 16;
 

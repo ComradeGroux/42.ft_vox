@@ -6,8 +6,6 @@
 class SimplexNoise {
 	private:
 		uint8_t	_perm[512];
-
-		static const int	GRADIENT[8][2];
 	
 		float	_cornerContribution(float x, float y, int i, int j) const;
 

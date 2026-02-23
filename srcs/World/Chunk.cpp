@@ -1,6 +1,6 @@
 #include "Chunk.hpp"
 
-Chunk::Chunk(int chunkX, int chunkY) : _chunkX(chunkX), _chunkY(chunkY)
+Chunk::Chunk(int chunkX, int chunkZ) : _chunkX(chunkX), _chunkZ(chunkZ)
 {
 }
 
@@ -14,6 +14,16 @@ VoxelType Chunk::get(int x, int y, int z) const {
 
 void Chunk::set(int x, int y, int z, VoxelType type) {
 	_sections[y / 16].set(x, y % 16, z, type);
+}
+
+int	Chunk::getChunkX(void) const
+{
+	return _chunkX;
+}
+
+int Chunk::getChunkZ(void) const
+{
+	return _chunkZ;
 }
 
 const Section&	Chunk::getSection(int sectionY) const
