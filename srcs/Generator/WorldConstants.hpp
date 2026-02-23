@@ -8,6 +8,10 @@ constexpr int	DIRT_LAYER_DEPTH = 5;
 
 constexpr int	RENDER_DISTANCE = 11;
 
+constexpr float	FOV = 80.0f;
+constexpr float NEAR_PLANE = 0.1f;
+constexpr float FAR_PLANE  = 320.0f;
+
 
 
 /****************/
