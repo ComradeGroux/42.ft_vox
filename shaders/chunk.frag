@@ -9,14 +9,12 @@ uniform sampler2D uAtlas;
 
 void main()
 {
-	FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	vec4 texColor = texture(uAtlas, vUV);
 
-//	vec4 texColor = texture(uAtlas, vUV);
-//
-//	vec3 lightDir = normalize(vec3(0.8, 1.0, 0.6));
-//	float diff	  = max(dot(vNormal, lightDir), 0.0);
-//	float ambient = 0.3;
-//	float light	  = ambient + (1.0 - ambient) * diff;
-//
-//	FragColor = vec4(texColor.rgb * light, texColor.a);
+	vec3 lightDir = normalize(vec3(0.8, 1.0, 0.6));
+	float diff	  = max(dot(vNormal, lightDir), 0.0);
+	float ambient = 0.3;
+	float light	  = ambient + (1.0 - ambient) * diff;
+
+	FragColor = vec4(texColor.rgb * light, texColor.a);
 }

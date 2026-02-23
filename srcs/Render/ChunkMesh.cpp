@@ -109,22 +109,55 @@ void	ChunkMesh::_buildFace(const glm::vec3& pos, const glm::vec3& normal,
 	_indices.push_back(baseIndex + 3);
 }
 
-bool	ChunkMesh::_isSolid(const Chunk& chunk, int x, int y, int z) const
+bool	ChunkMesh::_isSolid(const Chunk& chunk, int x, int y, int z, const NeighborChunks& neighbors) const
 {
-	if (x < 0 || x >= 16 || y < 0 || y >= 256 || z < 0 || z >= 16)
+	if (y < 0 || y >= 256)
 		return false;
+
+	if (x < 0)
+		return neighbors.nx && neighbors.nx->get(x + 16, y, z) != VoxelType::Air;
+	else if (x >= 16)
+		return neighbors.px && neighbors.px->get(x - 16, y, z) != VoxelType::Air;
+	else if (z < 0)
+		return neighbors.nz && neighbors.nz->get(x, y, z + 16) != VoxelType::Air;
+	else if (z >= 16)
+		return neighbors.pz && neighbors.pz->get(x, y, z - 16) != VoxelType::Air;
 
 	return chunk.get(x, y, z) != VoxelType::Air;
 }
 
-void	ChunkMesh::build(const Chunk& chunk)
+static int getTextureIndex(VoxelType type)
+{
+	switch (type)
+	{
+		case VoxelType::Grass:  return 0;
+		case VoxelType::Dirt:   return 1;
+		case VoxelType::Stone:  return 2;
+		case VoxelType::Sand:   return 3;
+		case VoxelType::Water:  return 4;
+		default:                return 0;
+	}
+}
+
+static glm::vec2 getUVMin(int textureIndex)
+{
+	return glm::vec2(textureIndex / 16.0f, 0.0f);
+}
+
+static glm::vec2 getUVMax(int textureIndex)
+{
+	return glm::vec2((textureIndex + 1) / 16.0f, 1.0f / 16.0f);
+}
+
+void	ChunkMesh::build(const Chunk& chunk, const NeighborChunks& neighbors)
 {
 	_vertices.clear();
 	_indices.clear();
 
-	glm::vec2	uvMin(0.0f, 0.0f);
-	glm::vec2	uvMax(1.0f, 1.0f);
+	glm::vec2	uvMin;
+	glm::vec2	uvMax;
 	glm::vec3	pos;
+	VoxelType	type;
 
 	for (int y = 0; y < 256; y++)
 	{
@@ -132,29 +165,35 @@ void	ChunkMesh::build(const Chunk& chunk)
 		{
 			for (int x = 0; x < 16; x++)
 			{
-				if (chunk.get(x, y, z) == VoxelType::Air)
+				type = chunk.get(x, y, z);
+
+				if (type == VoxelType::Air)
 					continue;
 
 				pos.x = (float)x;
 				pos.y = (float)y;
 				pos.z = (float)z;
 
-				if (!_isSolid(chunk, x, y + 1, z))
+				int	texIdx = getTextureIndex(type);
+				uvMin = getUVMin(texIdx);
+				uvMax = getUVMax(texIdx);
+				
+
+				if (!_isSolid(chunk, x, y + 1, z, neighbors))
 					_buildFace(pos, glm::vec3(0,  1,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y - 1, z))
+				if (!_isSolid(chunk, x, y - 1, z, neighbors))
 					_buildFace(pos, glm::vec3(0, -1,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x + 1, y, z))
+				if (!_isSolid(chunk, x + 1, y, z, neighbors))
 					_buildFace(pos, glm::vec3(1,  0,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x - 1, y, z))
+				if (!_isSolid(chunk, x - 1, y, z, neighbors))
 					_buildFace(pos, glm::vec3(-1, 0,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y, z + 1))
+				if (!_isSolid(chunk, x, y, z + 1, neighbors))
 					_buildFace(pos, glm::vec3(0,  0,  1), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y, z - 1))
+				if (!_isSolid(chunk, x, y, z - 1, neighbors))
 					_buildFace(pos, glm::vec3(0,  0, -1), uvMin, uvMax);
 			}
 		}
 	}
-
 
 	if (!_vertices.empty())
 		_uploadtoGPU();

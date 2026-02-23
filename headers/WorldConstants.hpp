@@ -12,6 +12,8 @@ constexpr float	FOV = 80.0f;
 constexpr float NEAR_PLANE = 0.1f;
 constexpr float FAR_PLANE  = (RENDER_DISTANCE * 1.5) * 16;
 
+constexpr GLsizei	TEXTURE_SIZE = 16;
+constexpr GLsizei	ATLAS_SIZE = 256;
 
 
 /********************/

@@ -83,9 +83,22 @@ Chunk&	World::loadChunk(int chunkX, int chunkZ)
 	if (result.second)
 	{
 		_generator.generate(*result.first->second);
+
+		NeighborChunks neighbors = {
+			getChunk(chunkX + 1, chunkZ),
+			getChunk(chunkX - 1, chunkZ),
+			getChunk(chunkX, chunkZ + 1),
+			getChunk(chunkX, chunkZ - 1)
+		};
+
 		std::unique_ptr<ChunkMesh> mesh = std::make_unique<ChunkMesh>();
-		mesh->build(*result.first->second);
+		mesh->build(*result.first->second, neighbors);
 		_meshes.emplace(key, std::move(mesh));
+
+		_rebuildNeighborMesh(chunkX + 1, chunkZ);
+		_rebuildNeighborMesh(chunkX - 1, chunkZ);
+		_rebuildNeighborMesh(chunkX, chunkZ + 1);
+		_rebuildNeighborMesh(chunkX, chunkZ - 1);
 	}
 
 	return *result.first->second;
@@ -136,4 +149,25 @@ void	World::updateLoadedChunks(float playerX, float playerZ)
 		else
 			it++;
 	}
+}
+
+void	World::_rebuildNeighborMesh(int chunkX, int chunkZ)
+{
+	Chunk*	neighbor = getChunk(chunkX, chunkZ);
+	if (!neighbor)
+		return;
+
+	uint64_t			neighborKey = _chunkKey(chunkX, chunkZ);
+	MeshMap::iterator	it = _meshes.find(neighborKey);
+	if (it == _meshes.end())
+		return;
+
+	NeighborChunks	neighbors = {
+		getChunk(chunkX + 1, chunkZ),
+		getChunk(chunkX - 1, chunkZ),
+		getChunk(chunkX, chunkZ + 1),
+		getChunk(chunkX, chunkZ - 1)
+	};
+
+	it->second->build(*neighbor, neighbors);
 }

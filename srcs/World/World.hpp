@@ -23,6 +23,8 @@ class World {
 
 		static	uint64_t	_chunkKey(int chunkX, int chunkZ);
 
+		void	_rebuildNeighborMesh(int chunkX, int chunkZ);
+
 	public:
 		World(uint64_t seed);
 		~World(void);

@@ -1,8 +1,5 @@
 #include "GLError.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 #include <iostream>
 
 #include "glad.h"
@@ -14,6 +11,7 @@
 #include "InputManager.hpp"
 #include "Shader.hpp"
 #include "ChunkMesh.hpp"
+#include "Texture.hpp"
 #include "WorldConstants.hpp"
 #include "utils.hpp"
 
@@ -22,12 +20,14 @@ struct GameContext {
 	Camera			camera;
 	InputManager	inputManager;
 	Shader			shader;
+	Texture			texture;
 
 	GameContext(uint64_t seed)
 		: world(seed),
 		camera(glm::vec3(0.0f, 160.0f, 0.0f), -90.0f, 0.0f),
 		inputManager(camera),
-		shader("shaders/chunk.vert", "shaders/test.frag")
+		shader("shaders/chunk.vert", "shaders/chunk.frag"),
+		texture("textures/atlas.png")
 	{}
 };
 
@@ -83,6 +83,7 @@ static void	render(GLFWwindow* window, GameContext& context)
 	glm::mat4	view = context.camera.getViewMatrix();
 	glm::mat4	projection = context.camera.getProjectionMatrix(aspectRatio);
 
+	context.texture.bind(0);
 	context.shader.use();
 	context.shader.setMat4("uView",       view);
 	context.shader.setMat4("uProjection", projection);
@@ -115,8 +116,6 @@ static void	gameLoop(GLFWwindow *window, GameContext& context)
 
 		glfwPollEvents();
 		context.inputManager.processKeyboard(window, deltaTime);
-
-		context.shader.use();
 
 		glm::vec3 pos = context.camera.getPosition();
 		context.world.updateLoadedChunks(pos.x, pos.z);
