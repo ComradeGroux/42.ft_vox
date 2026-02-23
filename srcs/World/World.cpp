@@ -1,6 +1,6 @@
 #include "World.hpp"
 
-World::World(void)
+World::World(uint64_t seed) : _generator(seed)
 {
 }
 
@@ -35,6 +35,9 @@ Chunk&	World::loadChunk(int chunkX, int chunkZ)
 {
 	uint64_t							key = _chunkKey(chunkX, chunkZ);
 	std::pair<ChunkMap::iterator, bool> result = _chunks.emplace(key, std::make_unique<Chunk>(chunkX, chunkZ));
+
+	if (result.second)
+		_generator.generate(*result.first->second);
 
 	return *result.first->second;
 }

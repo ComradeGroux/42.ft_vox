@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Chunk.hpp"
+#include "WorldGenerator.hpp"s
 #include <unordered_map>
 #include <memory>
 #include <cmath>
@@ -8,12 +9,14 @@
 class World {
 	private:
 		using ChunkMap = std::unordered_map<uint64_t, std::unique_ptr<Chunk>>;
-		ChunkMap	_chunks;
+		ChunkMap		_chunks;
+
+		WorldGenerator	_generator;
 
 		static	uint64_t	_chunkKey(int chunkX, int chunkZ);
 
 	public:
-		World(void);
+		World(uint64_t seed);
 		~World(void);
 
 		VoxelType	get(int x, int y, int z) const;
