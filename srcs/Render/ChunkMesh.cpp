@@ -51,33 +51,55 @@ void	ChunkMesh::_buildFace(const glm::vec3& pos, const glm::vec3& normal,
 								const glm::vec2& uvMin, const glm::vec2& uvMax)
 {
 	uint32_t	baseIndex = (uint32_t)_vertices.size();
+	glm::vec3	v0, v1, v2, v3;
 
-	glm::vec3 right, up;
-
-	if (normal == glm::vec3(0, 1, 0) || normal == glm::vec3(0, -1, 0))
+	if (normal == glm::vec3(0, 1, 0)) // Dessus
 	{
-		right 	= glm::vec3(1, 0, 0);
-		up 		= glm::vec3(0, 0, 1);
+		v0 = pos + glm::vec3(0, 1, 0);
+		v1 = pos + glm::vec3(0, 1, 1);
+		v2 = pos + glm::vec3(1, 1, 1);
+		v3 = pos + glm::vec3(1, 1, 0);
 	}
-	else if (normal == glm::vec3(1, 0, 0) || normal == glm::vec3(-1, 0, 0))
+	else if (normal == glm::vec3(0, -1, 0)) // Dessous
 	{
-		right	= glm::vec3(0, 0, 1);
-		up 		= glm::vec3(0, 1, 0);
+		v0 = pos + glm::vec3(0, 0, 0);
+		v1 = pos + glm::vec3(1, 0, 0);
+		v2 = pos + glm::vec3(1, 0, 1);
+		v3 = pos + glm::vec3(0, 0, 1);
 	}
-	else
+	else if (normal == glm::vec3(1, 0, 0)) // Droite
 	{
-		right 	= glm::vec3(1, 0, 0);
-		up 		= glm::vec3(0, 1, 0);
+		v0 = pos + glm::vec3(1, 0, 0);
+		v1 = pos + glm::vec3(1, 1, 0);
+		v2 = pos + glm::vec3(1, 1, 1);
+		v3 = pos + glm::vec3(1, 0, 1);
+	}
+	else if (normal == glm::vec3(-1, 0, 0)) // Gauche
+	{
+		v0 = pos + glm::vec3(0, 0, 1);
+		v1 = pos + glm::vec3(0, 1, 1);
+		v2 = pos + glm::vec3(0, 1, 0);
+		v3 = pos + glm::vec3(0, 0, 0);
+	}
+	else if (normal == glm::vec3(0, 0, 1)) // Devant
+	{
+		v0 = pos + glm::vec3(1, 0, 1);
+		v1 = pos + glm::vec3(1, 1, 1);
+		v2 = pos + glm::vec3(0, 1, 1);
+		v3 = pos + glm::vec3(0, 0, 1);
+	}
+	else // Derrière
+	{
+		v0 = pos + glm::vec3(0, 0, 0);
+		v1 = pos + glm::vec3(0, 1, 0);
+		v2 = pos + glm::vec3(1, 1, 0);
+		v3 = pos + glm::vec3(1, 0, 0);
 	}
 
-	glm::vec3	origin = pos;
-	if (normal.x > 0 || normal.y > 0 || normal.z > 0)
-		origin += normal;
-
-	_vertices.push_back({origin,				normal, {uvMin.x, uvMin.y}});
-	_vertices.push_back({origin + right,		normal, {uvMax.x, uvMin.y}});
-	_vertices.push_back({origin + right + up,	normal, {uvMax.x, uvMax.y}});
-	_vertices.push_back({origin + up,			normal, {uvMin.x, uvMax.y}});
+	_vertices.push_back({v0, normal, {uvMin.x, uvMin.y}});
+	_vertices.push_back({v1, normal, {uvMin.x, uvMax.y}});
+	_vertices.push_back({v2, normal, {uvMax.x, uvMax.y}});
+	_vertices.push_back({v3, normal, {uvMax.x, uvMin.y}});
 
 	_indices.push_back(baseIndex + 0);
 	_indices.push_back(baseIndex + 1);
@@ -138,12 +160,20 @@ void	ChunkMesh::build(const Chunk& chunk)
 		_uploadtoGPU();
 }
 
-void	ChunkMesh::draw() const
+void	ChunkMesh::draw(void) const
 {
 	if (_indexCount == 0)
+	{
+		std::cout << "Mesh vide, skip" << std::endl;
 		return;
+	}
 
 	cgl(glBindVertexArray(_vao));
 	cgl(glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_INT, 0));
 	cgl(glBindVertexArray(0));
+}
+
+bool	ChunkMesh::isEmpty(void) const
+{
+	return _indexCount == 0;
 }

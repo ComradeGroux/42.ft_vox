@@ -17,6 +17,9 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 
 	cgl(glDeleteShader(vertex));
 	cgl(glDeleteShader(fragment));
+
+	GLint linked;
+	cgl(glGetProgramiv(_program, GL_LINK_STATUS, &linked));
 }
 
 Shader::~Shader()

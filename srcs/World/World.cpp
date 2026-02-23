@@ -56,20 +56,46 @@ const Chunk*	World::getChunk(int chunkX, int chunkZ) const
 	return it->second.get();
 }
 
+const World::ChunkMap&	World::getChunks(void) const
+{
+	return _chunks;
+}
+
+const ChunkMesh*	World::getMesh(uint64_t key) const
+{
+	MeshMap::const_iterator	it = _meshes.find(key);
+	if (it == _meshes.end())
+		return nullptr;
+
+	return it->second.get();
+}
+
+const World::MeshMap&	World::getMeshes(void) const
+{
+	return _meshes;
+}
+
 Chunk&	World::loadChunk(int chunkX, int chunkZ)
 {
 	uint64_t							key = _chunkKey(chunkX, chunkZ);
 	std::pair<ChunkMap::iterator, bool> result = _chunks.emplace(key, std::make_unique<Chunk>(chunkX, chunkZ));
 
 	if (result.second)
+	{
 		_generator.generate(*result.first->second);
+		std::unique_ptr<ChunkMesh> mesh = std::make_unique<ChunkMesh>();
+		mesh->build(*result.first->second);
+		_meshes.emplace(key, std::move(mesh));
+	}
 
 	return *result.first->second;
 }
 
 void	World::unloadChunk(int chunkX, int chunkZ)
 {
-	_chunks.erase(_chunkKey(chunkX, chunkZ));
+	uint64_t key = _chunkKey(chunkX, chunkZ);
+	_chunks.erase(key);
+	_meshes.erase(key);
 }
 
 bool	World::isChunkLoaded(int chunkX, int chunkZ) const

@@ -1,6 +1,6 @@
 TARGET := ft_vox
 
-CLASS_HEADERS := World Generator Render tmp
+CLASS_HEADERS := World Generator Render Input tmp
 
 SRC_DIR := srcs
 BUILD_DIR := build
@@ -30,6 +30,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.cpp) \
 		$(wildcard $(SRC_DIR)/World/*.cpp) \
 		$(wildcard $(SRC_DIR)/Generator/*.cpp) \
 		$(wildcard $(SRC_DIR)/Render/*.cpp) \
+		$(wildcard $(SRC_DIR)/Input/*.cpp) \
 		$(wildcard $(SRC_DIR)/tmp/*.cpp)
 
 VPATH := $(dir $(SRCS))
