@@ -1,5 +1,6 @@
 #include "opengl.hpp"
 #include "utils.hpp"
+#include "World.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -16,7 +17,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	std::cout << hashSeed(argv[1]) << std::endl;
+	World	world(hashSeed(argv[1]));
 
 	return 0;
 }

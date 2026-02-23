@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Chunk.hpp"
-#include "WorldGenerator.hpp"s
+#include "WorldGenerator.hpp"
 #include <unordered_map>
 #include <memory>
 #include <cmath>
@@ -12,6 +12,9 @@ class World {
 		ChunkMap		_chunks;
 
 		WorldGenerator	_generator;
+
+		int	_lastPlayerChunkX;
+		int	_lastPlayerChunkZ;
 
 		static	uint64_t	_chunkKey(int chunkX, int chunkZ);
 
@@ -28,4 +31,5 @@ class World {
 		Chunk&	loadChunk(int chunkX, int chunkZ);
 		void	unloadChunk(int chunkX, int chunkZ);
 		bool	isChunkLoaded(int chunkX, int chunkZ) const;
+		void	updateLoadedChunks(float playerX, float playerZ);
 };

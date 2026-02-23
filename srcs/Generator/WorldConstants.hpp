@@ -6,7 +6,7 @@ constexpr int	TERRAIN_HEIGHT_MAX = 150;
 
 constexpr int	DIRT_LAYER_DEPTH = 5;
 
-
+constexpr int	RENDER_DISTANCE = 11;
 
 
 
