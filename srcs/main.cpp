@@ -22,8 +22,8 @@ struct GameContext {
 	Shader			shader;
 	Texture			texture;
 
-	GameContext(uint64_t seed)
-		: world(seed),
+	GameContext(uint64_t seed) :
+		world(seed),
 		camera(glm::vec3(0.0f, 160.0f, 0.0f), -90.0f, 0.0f),
 		inputManager(camera),
 		shader("shaders/chunk.vert", "shaders/chunk.frag"),
