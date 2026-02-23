@@ -1,4 +1,3 @@
-#include "opengl.hpp"
 #include "utils.hpp"
 #include "World.hpp"
 

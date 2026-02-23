@@ -1,6 +1,6 @@
 TARGET := ft_vox
 
-CLASS_HEADERS := World Generator tmp
+CLASS_HEADERS := World Generator Render tmp
 
 SRC_DIR := srcs
 BUILD_DIR := build
@@ -29,6 +29,7 @@ STB_LIB := $(STB_BUILD_DIR)/stb_image.h
 SRCS := $(wildcard $(SRC_DIR)/*.cpp) \
 		$(wildcard $(SRC_DIR)/World/*.cpp) \
 		$(wildcard $(SRC_DIR)/Generator/*.cpp) \
+		$(wildcard $(SRC_DIR)/Render/*.cpp) \
 		$(wildcard $(SRC_DIR)/tmp/*.cpp)
 
 VPATH := $(dir $(SRCS))
@@ -43,15 +44,20 @@ CLASS_DIRS := $(addprefix -I, $(addprefix $(SRC_DIR)/, $(CLASS_HEADERS)))
 #########################
 CXX := g++
 LDFLAGS := -lGL -ldl -lpthread -lm -lX11
-CXXFLAGS := -std=c++17 -O2 -Wall -Werror -g \
+CXXFLAGS := -std=c++17 -O2 -Wall -Werror \
 			-Iheaders \
-			-I$(GLFW_BUILD_DIR)/include \
+			-I$(GLFW_DEP_DIR)/include \
 			-I$(GLAD_BUILD_DIR)/include/glad \
+			-I$(GLM_DEP_DIR)/glm \
 			-I$(DEPS_DIR)/assimp/include \
 			-I$(STB_BUILD_DIR) \
 			$(CLASS_DIRS)
+DEBUG_FLAGS := -g -DDEBUG
 
 all: $(TARGET)
+
+debug: CXXFLAGS += $(DEBUG_FLAGS)
+debug: all
 
 $(TARGET): $(GLFW_LIB) $(GLM_LIB) $(GLAD_BUILD_DIR) $(ASSIMP_LIB) $(STB_LIB) $(OBJS) $(GLAD_OBJ)
 	@echo "→ Linking of $(TARGET)"
