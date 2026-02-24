@@ -1,5 +1,7 @@
 #pragma once
 
+#include "WorldConstants.hpp"
+
 #include <cstdint>
 #include <cmath>
 
@@ -16,7 +18,8 @@ class SimplexNoise {
 		~SimplexNoise(void);
 
 		float	noise2D(float x, float y) const;
-		float	fractal2D(float x, float y, int octaves, float frequency, float amplitude, float lacunarity, float persistence) const;
+		float	fractal2D(float x, float y, const TerrainParams& params) const;
 
 		float	noise3D(float x, float y, float z) const;
+		float	fractal3D(float x, float y, float z, const CaveParams& params) const;
 };

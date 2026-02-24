@@ -17,7 +17,7 @@ void	WorldGenerator::generate(Chunk& chunk) const
 	{
 		for (int z = 0; z < 16; z++)
 		{
-			y = _generateColumn(chunk, x, z, BIOME_DEFAULT.terrain);
+			y = _generateColumn(chunk, x, z, BIOME_DEFAULT.terrain) + 5;
 			_generateCaves(chunk, x, y, z, BIOME_DEFAULT.cave);
 		}
 	}
@@ -28,15 +28,7 @@ int	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const 
 	int	worldX = chunk.getChunkX() * 16 + localX;
 	int	worldZ = chunk.getChunkZ() * 16 + localZ;
 
-	float noise = _noise.fractal2D(
-		(float)worldX,
-		(float)worldZ,
-		params.octaves,
-		params.frequency,
-		params.amplitude,
-		params.lacunarity,
-		params.persistence
-	);
+	float noise = _noise.fractal2D( (float)worldX, (float)worldZ, params);
 
 	int	height = TERRAIN_HEIGHT_MIN + (int)((noise + 1.0f) / 2.0f * (TERRAIN_HEIGHT_MAX - TERRAIN_HEIGHT_MIN));
 
@@ -61,15 +53,17 @@ void	WorldGenerator::_generateCaves(Chunk& chunk, int localX, int maxY, int loca
 	int worldX = chunk.getChunkX() * 16 + localX;
 	int	worldZ = chunk.getChunkZ() * 16 + localZ;
 
-	for (int y = 0; y < maxY; y++)
+	float	minAttenuation = 0.7f;
+
+	for (int y = 1; y < maxY; y++)
 	{
 		if (chunk.get(localX, y, localZ) == VoxelType::Air)
 			continue;
 
-		float	noise = _noise.noise3D(worldX * params.frequency, y * params.frequency, worldZ * params.frequency);
+		float	noise = _noise.fractal3D(worldX * params.frequency, y * params.frequencyY, worldZ * params.frequency, params);
 
-		float attenuation = 1.0f - glm::smoothstep((float)maxY * params.surfaceRatio, (float)maxY, (float)y);
-		float value = noise * attenuation;
+		float	attenuation = minAttenuation + (1.0f - minAttenuation) * (1.0f - glm::smoothstep((float)maxY * params.surfaceRatio, (float)maxY, (float)y));
+		float	value = noise * attenuation;
 
 		if (value > params.threshold)
 			chunk.set(localX, y, localZ, VoxelType::Air);

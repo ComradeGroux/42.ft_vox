@@ -115,18 +115,20 @@ float	SimplexNoise::noise2D(float x, float y) const
  * lacunarity:	how much the frequency augment between layer
  * persistence:	how much the amplitude augment between layer
  */
-float	SimplexNoise::fractal2D(float x, float y, int octaves, float frequency, float amplitude, float lacunarity, float persistence) const
+float	SimplexNoise::fractal2D(float x, float y, const TerrainParams& params) const
 {
-	float result   = 0.0f;
-	float maxValue = 0.0f;
+	float	result   = 0.0f;
+	float	maxValue = 0.0f;
+	float	frequency = params.frequency;
+	float	amplitude = params.amplitude;
 
-	for (int i = 0; i < octaves; i++)
+	for (int i = 0; i < params.octaves; i++)
 	{
 		result   += noise2D(x * frequency, y * frequency) * amplitude;
 		maxValue += amplitude;
 
-		frequency   *= lacunarity;
-		amplitude   *= persistence;
+		frequency   *= params.lacunarity;
+		amplitude   *= params.persistence;
 	}
 
 	return result / maxValue;
@@ -277,4 +279,32 @@ float	SimplexNoise::noise3D(float x, float y, float z) const
 	float	n3 = _cornerContribution3D(x3, y3, z3, i + 1,  j + 1,  k + 1);
 
 	return 32.0f * (n0 + n1 + n2 + n3);
+}
+
+/**
+ * octaves:		number of layer of noise generated
+ * frequency:	zoom in/out
+ * amplitude:	control intensity of the layer
+ * lacunarity:	how much the frequency augment between layer
+ * persistence:	how much the amplitude augment between layer
+ */
+float	SimplexNoise::fractal3D(float x, float y, float z, const CaveParams& params) const
+{
+	float	result = 0.0f;
+	float	maxValue = 0.0f;
+	float	frequency = params.frequency;
+	float	frequencyY = params.frequencyY;
+	float	amplitude = params.amplitude;
+
+	for (int i = 0; i < params.octaves; i++)
+	{
+		result += noise3D(x * frequency, y * frequencyY, z * frequency) * params.amplitude;
+		maxValue += params.amplitude;
+
+		frequency *= params.lacunarity;
+		frequencyY *= params.lacunarity;
+		amplitude *= params.persistence;
+	}
+
+	return result / maxValue;
 }

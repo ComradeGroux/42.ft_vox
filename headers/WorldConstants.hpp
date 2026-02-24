@@ -60,7 +60,13 @@ struct TerrainParams {
 };
 
 struct CaveParams {
+	int		octaves;
 	float	frequency;
+	float	frequencyY;
+	float	amplitude;
+	float	lacunarity;
+	float	persistence;
+
 	float	threshold;
 	float	surfaceRatio;
 };
@@ -83,9 +89,15 @@ constexpr BiomeParams BIOME_DEFAULT = {
 		VoxelType::Grass
 	},
 	{
-		0.05f,	// frequency
-		0.7f,	// threshold
-		0.8f	// surfaceRation
+		3,		// octaves
+		0.08f,	// frequency
+		0.1f,	// frequencyY
+		1.0f,	// amplitude
+		2.0f,	// lacunarity
+		0.5f,	// persistence
+
+		0.4f,	// threshold
+		0.8f	// surfaceRatio
 	}
 };
 
