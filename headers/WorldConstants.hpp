@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <cstdint>
+#include "Section.hpp"
 
 /********************/
 /*****  RENDER  *****/
@@ -40,25 +41,65 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 constexpr int	TERRAIN_HEIGHT_MIN = 50;
 constexpr int	TERRAIN_HEIGHT_MAX = 150;
 
-constexpr int	DIRT_LAYER_DEPTH = 5;
-
 
 
 /********************/
 /*****  BIOMES  *****/
 /********************/
-struct NoiseParams {
-	int		octaves;
-	float	frequency;
-	float	amplitude;
-	float	lacunarity;
-	float	persistence;
+
+struct TerrainParams {
+	int			octaves;
+	float		frequency;
+	float		amplitude;
+	float		lacunarity;
+	float		persistence;
+
+	int				ground_depth;		// Nombre de bloc que fait le layer juste sous la surface
+	VoxelType		ground_depth_type;	// Type de bloc du layer juste sous la surface
+	VoxelType		ground_type;		// Type de bloc de la surface
 };
 
-constexpr NoiseParams BIOME_DEFAULT = {
-	6,		// octaves
-	0.003f,	// frequency
-	1.0f,	// amplitude
-	2.0f,	// lacunarity
-	0.5f	// persistence
+struct CaveParams {
+	float	frequency;
+	float	threshold;
+	int		maxHeight;
+};
+
+struct BiomeParams {
+	TerrainParams	terrain;
+	CaveParams		cave;
+};
+
+constexpr BiomeParams BIOME_DEFAULT = {
+	{
+		6,		// octaves
+		0.003f,	// frequency
+		1.0f,	// amplitude
+		2.0f,	// lacunarity
+		0.5f,	// persistence
+
+		3,
+		VoxelType::Dirt,
+		VoxelType::Grass
+	},
+	{
+
+	}
+};
+
+constexpr BiomeParams BIOME_DESERT = {
+	{
+		3,		// octaves
+		0.02f,  // frequency
+		0.005f,	// amplitude
+		1.8f,	// lacunarity
+		0.5f,	// persistence
+
+		15,
+		VoxelType::Sand,
+		VoxelType::Sand
+	},
+	{
+
+	}
 };

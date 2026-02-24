@@ -17,7 +17,7 @@ void	WorldGenerator::generate(Chunk& chunk) const
 	}
 }
 
-void	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const NoiseParams& params) const
+void	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const BiomeParams& params) const
 {
 	int	worldX = chunk.getChunkX() * 16 + localX;
 	int	worldZ = chunk.getChunkZ() * 16 + localZ;
@@ -25,11 +25,11 @@ void	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const
 	float noise = _noise.fractal2D(
 		(float)worldX,
 		(float)worldZ,
-		params.octaves,
-		params.frequency,
-		params.amplitude,
-		params.lacunarity,
-		params.persistence
+		params.terrain.octaves,
+		params.terrain.frequency,
+		params.terrain.amplitude,
+		params.terrain.lacunarity,
+		params.terrain.persistence
 	);
 
 	int	height = TERRAIN_HEIGHT_MIN + (int)((noise + 1.0f) / 2.0f * (TERRAIN_HEIGHT_MAX - TERRAIN_HEIGHT_MIN));
@@ -39,9 +39,9 @@ void	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const
 		VoxelType type;
 
 		if (y == height)
-			type = VoxelType::Grass;
-		else if (y >= height - DIRT_LAYER_DEPTH)
-			type = VoxelType::Dirt;
+			type = params.terrain.ground_type;
+		else if (y >= height - params.terrain.ground_depth)
+			type = params.terrain.ground_depth_type;
 		else
 			type = VoxelType::Stone;
 
