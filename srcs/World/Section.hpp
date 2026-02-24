@@ -16,13 +16,13 @@ enum class VoxelType : uint8_t {
  * A section is a part of a chunk.
  * 
  * While each chunk is 16x256x16 bloc wide, a section is only 16x16x16.
- * It means that a chunk is composed of 8 section
+ * It means that a chunk is composed of 16 section
  * 
  */
 class Section {
 	private:
 		std::array<VoxelType, 4096>	_data;
-		uint8_t						_solidCount;
+		uint16_t					_solidCount;
 	
 	public:
 		Section(void);

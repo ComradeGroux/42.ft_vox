@@ -12,6 +12,7 @@
 #include "Shader.hpp"
 #include "ChunkMesh.hpp"
 #include "Texture.hpp"
+#include "Skybox.hpp"
 #include "WorldConstants.hpp"
 #include "utils.hpp"
 
@@ -21,13 +22,15 @@ struct GameContext {
 	InputManager	inputManager;
 	Shader			shader;
 	Texture			texture;
+	Skybox			skybox;
 
 	GameContext(uint64_t seed) :
 		world(seed),
 		camera(glm::vec3(0.0f, 160.0f, 0.0f), -90.0f, 0.0f),
 		inputManager(camera),
 		shader("shaders/chunk.vert", "shaders/chunk.frag"),
-		texture("textures/atlas.png")
+		texture("textures/atlas.png"),
+		skybox("shaders/skybox.vert", "shaders/skybox.frag")
 	{}
 };
 
@@ -82,6 +85,8 @@ static void	render(GLFWwindow* window, GameContext& context)
 
 	glm::mat4	view = context.camera.getViewMatrix();
 	glm::mat4	projection = context.camera.getProjectionMatrix(aspectRatio);
+
+	context.skybox.draw(view, projection);
 
 	context.texture.bind(0);
 	context.shader.use();
