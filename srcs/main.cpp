@@ -8,6 +8,7 @@
 
 #include "World.hpp"
 #include "Camera.hpp"
+#include "Frustum.hpp"
 #include "InputManager.hpp"
 #include "Shader.hpp"
 #include "ChunkMesh.hpp"
@@ -23,6 +24,7 @@ struct GameContext {
 	Shader			shader;
 	Texture			texture;
 	Skybox			skybox;
+	Frustum			frustum;
 
 	GameContext(uint64_t seed) :
 		world(seed),
@@ -94,15 +96,20 @@ static void	render(GLFWwindow* window, GameContext& context)
 	context.shader.setMat4("uProjection", projection);
 	context.shader.setInt("uAtlas",       0);
 
+	context.frustum.update(view, projection);
+
 	for (auto& [key, chunk] : context.world.getChunks())
 	{
 		const ChunkMesh* mesh = context.world.getMesh(key);
 		if (!mesh || mesh->isEmpty())
 			continue;
 
-		glm::mat4 model = glm::translate(glm::mat4(1.0f),
-			glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f));
+		glm::vec3 min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f,   chunk->getChunkZ() * 16.0f);
+		glm::vec3 max = glm::vec3(min.x + 16.0f,              256.0f, min.z + 16.0f);
+		if (!context.frustum.isBoxVisible(min, max))
+			continue;
 
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f));
 		context.shader.setMat4("uModel", model);
 		mesh->draw();
 	}
