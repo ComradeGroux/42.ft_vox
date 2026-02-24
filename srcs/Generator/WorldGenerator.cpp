@@ -53,19 +53,22 @@ void	WorldGenerator::_generateCaves(Chunk& chunk, int localX, int maxY, int loca
 	int worldX = chunk.getChunkX() * 16 + localX;
 	int	worldZ = chunk.getChunkZ() * 16 + localZ;
 
-	float	minAttenuation = 0.7f;
+	float	minAttenuation = 0.2f;
 
 	for (int y = 1; y < maxY; y++)
 	{
 		if (chunk.get(localX, y, localZ) == VoxelType::Air)
 			continue;
 
-		float	noise = _noise.fractal3D(worldX * params.frequency, y * params.frequencyY, worldZ * params.frequency, params);
+		float	caveNoise = _noise.fractal3D(worldX * params.frequency, y * params.frequencyY, worldZ * params.frequency, params);
+		float	densityNoise = _noise.noise3D(worldX * 0.005f, y * 0.005f, worldZ * 0.005f);
 
 		float	attenuation = minAttenuation + (1.0f - minAttenuation) * (1.0f - glm::smoothstep((float)maxY * params.surfaceRatio, (float)maxY, (float)y));
-		float	value = noise * attenuation;
 
-		if (value > params.threshold)
+		float	densityFactor = glm::smoothstep(-0.5f, 0.5f, densityNoise);
+		float	modulatedThreshold = params.threshold - (densityFactor * 0.2f);
+
+		if (caveNoise * attenuation > modulatedThreshold)
 			chunk.set(localX, y, localZ, VoxelType::Air);
 	}
 }
