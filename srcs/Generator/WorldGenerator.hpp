@@ -11,7 +11,8 @@ class WorldGenerator {
 		uint64_t		_seed;
 		SimplexNoise	_noise;
 
-		void	_generateColumn(Chunk& chunk, int localX, int localZ, const BiomeParams& params) const;
+		int		_generateColumn(Chunk& chunk, int localX, int localZ, const TerrainParams& params) const;
+		void	_generateCaves(Chunk& chunk, int localX, int maxY, int localZ, const CaveParams& params) const;
 
 	public:
 		WorldGenerator(uint64_t seed);
