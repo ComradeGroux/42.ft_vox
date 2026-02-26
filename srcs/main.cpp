@@ -32,7 +32,8 @@ struct GameContext {
 		inputManager(camera),
 		shader("shaders/chunk.vert", "shaders/chunk.frag"),
 		texture("textures/atlas.png"),
-		skybox("shaders/skybox.vert", "shaders/skybox.frag")
+		skybox("shaders/skybox.vert", "shaders/skybox.frag"),
+		frustum()
 	{}
 };
 
@@ -79,6 +80,51 @@ static bool	initGLAD(GLFWwindow* window)
 	return true;
 }
 
+static void	renderSolid(GameContext& context)
+{
+	for (auto& [key, chunk] : context.world.getChunks())
+	{
+		const ChunkMesh*	mesh = context.world.getMesh(key);
+		if (!mesh || mesh->isEmpty())
+			continue;
+
+		glm::vec3	min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f);
+		glm::vec3	max = glm::vec3(min.x + 16.0f, 256.0f, min.z + 16.0f);
+		if (!context.frustum.isBoxVisible(min, max))
+			continue;
+
+		glm::mat4	model = glm::translate(glm::mat4(1.0f), glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f));
+		context.shader.setMat4("uModel", model);
+		mesh->draw();
+	}
+}
+
+static void	renderWater(GameContext& context)
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDepthMask(GL_FALSE);
+
+	for (auto& [key, chunk] : context.world.getChunks())
+	{
+		const ChunkMesh*	mesh = context.world.getMesh(key);
+		if (!mesh || mesh->isWaterEmpty())
+			continue;
+
+		glm::vec3	min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f);
+		glm::vec3	max = glm::vec3(min.x + 16.0f, 256.0f, min.z + 16.0f);
+		if (!context.frustum.isBoxVisible(min, max))
+			continue;
+
+		glm::mat4	model = glm::translate(glm::mat4(1.0f), glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f));
+		context.shader.setMat4("uModel", model);
+		mesh->drawWater();
+	}
+
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
+}
+
 static void	render(GLFWwindow* window, GameContext& context)
 {
 	int width, height;
@@ -92,27 +138,14 @@ static void	render(GLFWwindow* window, GameContext& context)
 
 	context.texture.bind(0);
 	context.shader.use();
-	context.shader.setMat4("uView",       view);
+	context.shader.setMat4("uView", view);
 	context.shader.setMat4("uProjection", projection);
-	context.shader.setInt("uAtlas",       0);
+	context.shader.setInt("uAtlas", 0);
 
 	context.frustum.update(view, projection);
 
-	for (auto& [key, chunk] : context.world.getChunks())
-	{
-		const ChunkMesh* mesh = context.world.getMesh(key);
-		if (!mesh || mesh->isEmpty())
-			continue;
-
-		glm::vec3 min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f);
-		glm::vec3 max = glm::vec3(min.x + 16.0f, 256.0f, min.z + 16.0f);
-		if (!context.frustum.isBoxVisible(min, max))
-			continue;
-
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f));
-		context.shader.setMat4("uModel", model);
-		mesh->draw();
-	}
+	renderSolid(context);
+	renderWater(context);
 }
 
 static void	gameLoop(GLFWwindow *window, GameContext& context)

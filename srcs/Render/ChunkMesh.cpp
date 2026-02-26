@@ -1,10 +1,14 @@
 #include "ChunkMesh.hpp"
 
-ChunkMesh::ChunkMesh(void) : _vao(0), _vbo(0), _ebo(0), _indexCount(0)
+ChunkMesh::ChunkMesh(void) : _vao(0), _vbo(0), _ebo(0), _indexCount(0), _waterVao(0), _waterVbo(0), _waterEbo(0), _waterIndexCount(0)
 {
 	cgl(glGenVertexArrays(1, &_vao));
 	cgl(glGenBuffers(1, &_vbo));
 	cgl(glGenBuffers(1, &_ebo));
+
+	cgl(glGenVertexArrays(1, &_waterVao));
+	cgl(glGenBuffers(1, &_waterVbo));
+	cgl(glGenBuffers(1, &_waterEbo));
 }
 
 ChunkMesh::~ChunkMesh()
@@ -12,22 +16,26 @@ ChunkMesh::~ChunkMesh()
 	cgl(glDeleteVertexArrays(1, &_vao));
 	cgl(glDeleteBuffers(1, &_vbo));
 	cgl(glDeleteBuffers(1, &_ebo));
+
+	cgl(glDeleteVertexArrays(1, &_waterVao));
+	cgl(glDeleteBuffers(1, &_waterVbo));
+	cgl(glDeleteBuffers(1, &_waterEbo));
 }
 
-void	ChunkMesh::_uploadtoGPU(void)
+void	ChunkMesh::_uploadBuffers(GLuint vao, GLuint vbo, GLuint ebo, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, int& indexCount)
 {
-	cgl(glBindVertexArray(_vao));
+	cgl(glBindVertexArray(vao));
 
-	cgl(glBindBuffer(GL_ARRAY_BUFFER, _vbo));
+	cgl(glBindBuffer(GL_ARRAY_BUFFER, vbo));
 	cgl(glBufferData(GL_ARRAY_BUFFER,
-					_vertices.size() * sizeof(Vertex),
-					_vertices.data(),
+					vertices.size() * sizeof(Vertex),
+					vertices.data(),
 					GL_STATIC_DRAW));
 	
-	cgl(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo));
+	cgl(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo));
 	cgl(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-					_indices.size() * sizeof(uint32_t),
-					_indices.data(),
+					indices.size() * sizeof(uint32_t),
+					indices.data(),
 					GL_STATIC_DRAW));
 	
 	cgl(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
@@ -42,15 +50,24 @@ void	ChunkMesh::_uploadtoGPU(void)
 							(void*)offsetof(Vertex, uv)));
 	cgl(glEnableVertexAttribArray(2));
 
-	_indexCount = (int)_indices.size();
+	indexCount = (int)indices.size();
 
 	cgl(glBindVertexArray(0));
 }
 
-void	ChunkMesh::_buildFace(const glm::vec3& pos, const glm::vec3& normal,
-								const glm::vec2& uvMin, const glm::vec2& uvMax)
+void	ChunkMesh::_uploadToGPU(void)
 {
-	uint32_t	baseIndex = (uint32_t)_vertices.size();
+	if (!_vertices.empty())
+		_uploadBuffers(_vao, _vbo, _ebo, _vertices, _indices, _indexCount);
+
+	if (!_waterVertices.empty())
+		_uploadBuffers(_waterVao, _waterVbo, _waterEbo, _waterVertices, _waterIndices, _waterIndexCount);
+}
+
+void	ChunkMesh::_buildFace(const glm::vec3& pos, const glm::vec3& normal,
+								const glm::vec2& uvMin, const glm::vec2& uvMax, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices)
+{
+	uint32_t	baseIndex = (uint32_t)vertices.size();
 	glm::vec3	v0, v1, v2, v3;
 
 	if (normal == glm::vec3(0, 1, 0)) // Dessus
@@ -96,36 +113,34 @@ void	ChunkMesh::_buildFace(const glm::vec3& pos, const glm::vec3& normal,
 		v3 = pos + glm::vec3(1, 0, 0);
 	}
 
-	_vertices.push_back({v0, normal, {uvMin.x, uvMin.y}});
-	_vertices.push_back({v1, normal, {uvMin.x, uvMax.y}});
-	_vertices.push_back({v2, normal, {uvMax.x, uvMax.y}});
-	_vertices.push_back({v3, normal, {uvMax.x, uvMin.y}});
+	vertices.push_back({v0, normal, {uvMin.x, uvMin.y}});
+	vertices.push_back({v1, normal, {uvMin.x, uvMax.y}});
+	vertices.push_back({v2, normal, {uvMax.x, uvMax.y}});
+	vertices.push_back({v3, normal, {uvMax.x, uvMin.y}});
 
-	_indices.push_back(baseIndex + 0);
-	_indices.push_back(baseIndex + 1);
-	_indices.push_back(baseIndex + 2);
-	_indices.push_back(baseIndex + 0);
-	_indices.push_back(baseIndex + 2);
-	_indices.push_back(baseIndex + 3);
+	indices.push_back(baseIndex + 0);
+	indices.push_back(baseIndex + 1);
+	indices.push_back(baseIndex + 2);
+	indices.push_back(baseIndex + 0);
+	indices.push_back(baseIndex + 2);
+	indices.push_back(baseIndex + 3);
 }
 
 bool	ChunkMesh::_isSolid(const Chunk& chunk, int x, int y, int z, const NeighborChunks& neighbors) const
 {
 	if (y < 0 || y >= 256)
 		return false;
-	// if (chunk.get(x, y, z) == VoxelType::Water)
-	// 	return false;
 
 	if (x < 0)
-		return neighbors.nx && neighbors.nx->get(x + 16, y, z) != VoxelType::Air;
+		return neighbors.nx && neighbors.nx->get(x + 16, y, z) != VoxelType::Air && neighbors.nx->get(x + 16, y, z) != VoxelType::Water;
 	else if (x >= 16)
-		return neighbors.px && neighbors.px->get(x - 16, y, z) != VoxelType::Air;
+		return neighbors.px && neighbors.px->get(x - 16, y, z) != VoxelType::Air && neighbors.px->get(x - 16, y, z) != VoxelType::Water;
 	else if (z < 0)
-		return neighbors.nz && neighbors.nz->get(x, y, z + 16) != VoxelType::Air;
+		return neighbors.nz && neighbors.nz->get(x, y, z + 16) != VoxelType::Air && neighbors.nz->get(x, y, z + 16) != VoxelType::Water;
 	else if (z >= 16)
-		return neighbors.pz && neighbors.pz->get(x, y, z - 16) != VoxelType::Air;
+		return neighbors.pz && neighbors.pz->get(x, y, z - 16) != VoxelType::Air && neighbors.pz->get(x, y, z - 16) != VoxelType::Water;
 
-	return chunk.get(x, y, z) != VoxelType::Air;
+	return chunk.get(x, y, z) != VoxelType::Air && chunk.get(x, y, z) != VoxelType::Water;
 }
 
 static int getTextureIndex(VoxelType type)
@@ -155,6 +170,8 @@ void	ChunkMesh::build(const Chunk& chunk, const NeighborChunks& neighbors)
 {
 	_vertices.clear();
 	_indices.clear();
+	_waterVertices.clear();
+	_waterIndices.clear();
 
 	glm::vec2	uvMin;
 	glm::vec2	uvMax;
@@ -180,25 +197,42 @@ void	ChunkMesh::build(const Chunk& chunk, const NeighborChunks& neighbors)
 				uvMin = getUVMin(texIdx);
 				uvMax = getUVMax(texIdx);
 				
-
-				if (!_isSolid(chunk, x, y + 1, z, neighbors))
-					_buildFace(pos, glm::vec3(0,  1,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y - 1, z, neighbors))
-					_buildFace(pos, glm::vec3(0, -1,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x + 1, y, z, neighbors))
-					_buildFace(pos, glm::vec3(1,  0,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x - 1, y, z, neighbors))
-					_buildFace(pos, glm::vec3(-1, 0,  0), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y, z + 1, neighbors))
-					_buildFace(pos, glm::vec3(0,  0,  1), uvMin, uvMax);
-				if (!_isSolid(chunk, x, y, z - 1, neighbors))
-					_buildFace(pos, glm::vec3(0,  0, -1), uvMin, uvMax);
+				if (type == VoxelType::Water)
+				{
+					if (_getVoxel(chunk, x, y + 1, z, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(0,  1,  0), uvMin, uvMax, _waterVertices, _waterIndices);
+					if (_getVoxel(chunk, x, y - 1, z, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(0, -1,  0), uvMin, uvMax, _waterVertices, _waterIndices);
+					if (_getVoxel(chunk, x + 1, y, z, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(1,  0,  0), uvMin, uvMax, _waterVertices, _waterIndices);
+					if (_getVoxel(chunk, x - 1, y, z, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(-1, 0,  0), uvMin, uvMax, _waterVertices, _waterIndices);
+					if (_getVoxel(chunk, x, y, z + 1, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(0,  0,  1), uvMin, uvMax, _waterVertices, _waterIndices);
+					if (_getVoxel(chunk, x, y, z - 1, neighbors) == VoxelType::Air)
+						_buildFace(pos, glm::vec3(0,  0, -1), uvMin, uvMax, _waterVertices, _waterIndices);
+				}
+				else
+				{
+					if (!_isSolid(chunk, x, y + 1, z, neighbors))
+						_buildFace(pos, glm::vec3(0,  1,  0), uvMin, uvMax, _vertices, _indices);
+					if (!_isSolid(chunk, x, y - 1, z, neighbors))
+						_buildFace(pos, glm::vec3(0, -1,  0), uvMin, uvMax, _vertices, _indices);
+					if (!_isSolid(chunk, x + 1, y, z, neighbors))
+						_buildFace(pos, glm::vec3(1,  0,  0), uvMin, uvMax, _vertices, _indices);
+					if (!_isSolid(chunk, x - 1, y, z, neighbors))
+						_buildFace(pos, glm::vec3(-1, 0,  0), uvMin, uvMax, _vertices, _indices);
+					if (!_isSolid(chunk, x, y, z + 1, neighbors))
+						_buildFace(pos, glm::vec3(0,  0,  1), uvMin, uvMax, _vertices, _indices);
+					if (!_isSolid(chunk, x, y, z - 1, neighbors))
+						_buildFace(pos, glm::vec3(0,  0, -1), uvMin, uvMax, _vertices, _indices);
+				}
 			}
 		}
 	}
 
 	if (!_vertices.empty())
-		_uploadtoGPU();
+		_uploadToGPU();
 }
 
 void	ChunkMesh::draw(void) const
@@ -217,4 +251,36 @@ void	ChunkMesh::draw(void) const
 bool	ChunkMesh::isEmpty(void) const
 {
 	return _indexCount == 0;
+}
+
+bool	ChunkMesh::isWaterEmpty(void) const
+{
+	return _waterIndexCount == 0;
+}
+
+void	ChunkMesh::drawWater(void) const
+{
+	if (_waterIndexCount == 0)
+		return;
+
+	cgl(glBindVertexArray(_waterVao));
+	cgl(glDrawElements(GL_TRIANGLES, _waterIndexCount, GL_UNSIGNED_INT, 0));
+	cgl(glBindVertexArray(0));
+}
+
+VoxelType   ChunkMesh::_getVoxel(const Chunk& chunk, int x, int y, int z, const NeighborChunks& neighbors) const
+{
+	if (y < 0 || y >= 256)
+		return VoxelType::Air;
+
+	if (x < 0)
+		return neighbors.nx ? neighbors.nx->get(x + 16, y, z) : VoxelType::Air;
+	else if (x >= 16)
+		return neighbors.px ? neighbors.px->get(x - 16, y, z) : VoxelType::Air;
+	else if (z < 0)
+		return neighbors.nz ? neighbors.nz->get(x, y, z + 16) : VoxelType::Air;
+	else if (z >= 16)
+		return neighbors.pz ? neighbors.pz->get(x, y, z - 16) : VoxelType::Air;
+
+	return chunk.get(x, y, z);
 }

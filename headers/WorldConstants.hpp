@@ -129,7 +129,7 @@ constexpr BiomeParams BIOME_OCEAN = {
 	true,
 	{
 		1, 0.001f, 1.0f, 2.0f, 0.4f,
-		40, 64,
+		50, 64,
 		VoxelType::Sand, VoxelType::Stone, 3
 	},
 	{
