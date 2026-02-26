@@ -10,10 +10,6 @@ WorldGenerator::~WorldGenerator(void)
 {
 }
 
-#include <iostream>
-
-bool	isOcean = false;
-
 void	WorldGenerator::generate(Chunk& chunk) const
 {
 	WeightGrid	weights = _computeSmoothedWeights(chunk);
