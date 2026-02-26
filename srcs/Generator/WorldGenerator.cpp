@@ -31,52 +31,53 @@ void	WorldGenerator::generate(Chunk& chunk) const
 					dominantBiome = i;
 			}
 
-			if (dominantBiome == 3)
-				isOcean = true;
-			else
-				isOcean = false;
-
-			height = _generateColumn(chunk, x, z, weights[x][z], BIOMES[dominantBiome].terrain);
+			height = _generateColumn(chunk, x, z, weights[x][z], dominantBiome);
 			_generateCaves(chunk, x, height, z, BIOMES[dominantBiome].cave);
 		}
 	}
 }
 
-int	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const std::array<float, NUMBER_BIOME>& weights, const TerrainParams& params) const
+int	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const std::array<float, NUMBER_BIOME>& weights, int dominantBiome) const
 {
 	int	worldX = chunk.getChunkX() * 16 + localX;
 	int	worldZ = chunk.getChunkZ() * 16 + localZ;
 
-	float blendedHeight = 0.0f;
+	float	nonOceanHeight = 0.0f;
+	float	nonOceanWeight = 0.0f;
+	float	totalOceanWeight = 0.0f;
 	for (int i = 0; i < NUMBER_BIOME; i++)
 	{
+		if (BIOMES[i].isOcean)
+		{
+			totalOceanWeight += weights[i];
+			continue;
+		}
+
 		const TerrainParams& terrain = BIOMES[i].terrain;
-
 		float noise = _terrainNoise.fractal2D((float)worldX, (float)worldZ, terrain);
-
 		float height = terrain.terrain_min_height + (noise + 1.0f) / 2.0f * (terrain.terrain_max_height - terrain.terrain_min_height);
-		blendedHeight += height * weights[i];
-
-		if (isOcean && localX == 8 && localZ == 8)
-			std::cout << "biome " << i << " weight=" << weights[i] << " height=" << height << std::endl;
+		nonOceanHeight += height * weights[i];
+		nonOceanWeight += weights[i];
 	}
 
-	if (isOcean && localX == 8 && localZ == 8)
-		std::cout << "blendedHeight=" << blendedHeight << std::endl;
-
-	int height = (int)blendedHeight;
+	int height = (int)glm::min(nonOceanHeight, glm::mix(nonOceanHeight, (float)SEA_LEVEL, totalOceanWeight));
 
 	VoxelType	type;
 	for (int y = 0; y <= height; y++)
 	{
 		if (y == height)
-			type = params.ground_type;
-		else if (y >= height - params.ground_depth)
-			type = params.ground_depth_type;
+			type = BIOMES[dominantBiome].terrain.ground_type;
+		else if (y >= height - BIOMES[dominantBiome].terrain.ground_depth)
+			type = BIOMES[dominantBiome].terrain.ground_depth_type;
 		else
 			type = VoxelType::Stone;
 
 		chunk.set(localX, y, localZ, type);
+	}
+	if (height < SEA_LEVEL)
+	{
+		for (int y = height + 1; y <= SEA_LEVEL; y++)
+			chunk.set(localX, y, localZ, VoxelType::Water);
 	}
 	return height;
 }

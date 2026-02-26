@@ -18,7 +18,7 @@ class WorldGenerator {
 		SimplexNoise	_temperatureNoise;
 		SimplexNoise	_humidityNoise;
 
-		int		_generateColumn(Chunk& chunk, int localX, int localZ, const std::array<float, NUMBER_BIOME>& weights, const TerrainParams& params) const;
+		int		_generateColumn(Chunk& chunk, int localX, int localZ, const std::array<float, NUMBER_BIOME>& weights, int dominantBiome) const;
 		void	_generateCaves(Chunk& chunk, int localX, int maxY, int localZ, const CaveParams& params) const;
 
 		std::array<float, NUMBER_BIOME>	_getBiomeWeights(float worldX, float worldZ) const;

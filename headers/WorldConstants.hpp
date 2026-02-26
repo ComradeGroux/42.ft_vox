@@ -40,8 +40,9 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 /*****  BIOMES  *****/
 /********************/
 
-constexpr int BLEND_RADIUS = 4;
-constexpr int GRID_SIZE = 16 + 2 * BLEND_RADIUS;
+constexpr int	BLEND_RADIUS = 8;
+constexpr int	GRID_SIZE = 16 + 2 * BLEND_RADIUS;
+constexpr int	SEA_LEVEL = 64;
 
 struct TerrainParams {
 	int			octaves;
@@ -72,6 +73,7 @@ struct CaveParams {
 struct BiomeParams {
 	float			temperature;
 	float			humidity;
+	bool			isOcean;
 	TerrainParams	terrain;
 	CaveParams		cave;
 };
@@ -79,9 +81,10 @@ struct BiomeParams {
 constexpr BiomeParams BIOME_PLAIN = {
 	0.5f,
 	0.6f,
+	false,
 	{
 		6, 0.003f, 1.0f, 2.0f, 0.5f,
-		70, 100,
+		65, 100,
 		VoxelType::Grass, VoxelType::Dirt, 5
 	},
 	{
@@ -93,6 +96,7 @@ constexpr BiomeParams BIOME_PLAIN = {
 constexpr BiomeParams BIOME_MOUNTAIN = {
 	0.3f,
 	0.4f,
+	false,
 	{
 		8, 0.005f, 1.0f, 2.0f, 0.6f,
 		100, 220,
@@ -107,6 +111,7 @@ constexpr BiomeParams BIOME_MOUNTAIN = {
 constexpr BiomeParams BIOME_DESERT = {
 	0.9f,
 	0.1f,
+	false,
 	{
 		4, 0.002f, 1.0f, 2.0f, 0.4f,
 		65, 85,
@@ -121,10 +126,11 @@ constexpr BiomeParams BIOME_DESERT = {
 constexpr BiomeParams BIOME_OCEAN = {
 	0.5f,
 	1.0f,
+	true,
 	{
 		1, 0.001f, 1.0f, 2.0f, 0.4f,
-		62, 64,
-		VoxelType::Water, VoxelType::Water, 15
+		40, 64,
+		VoxelType::Sand, VoxelType::Stone, 3
 	},
 	{
 		3, 0.08f, 0.1f, 1.0f, 2.0f, 0.5f,
