@@ -46,3 +46,4 @@ deps/
 ft_vox
 .venv/
 */tmp/
+debug.txt

@@ -37,7 +37,7 @@ void	WorldGenerator::generate(Chunk& chunk) const
 				isOcean = false;
 
 			height = _generateColumn(chunk, x, z, weights[x][z], BIOMES[dominantBiome].terrain);
-			_generateCaves(chunk, x, z, height, BIOMES[dominantBiome].cave);
+			_generateCaves(chunk, x, height, z, BIOMES[dominantBiome].cave);
 		}
 	}
 }
