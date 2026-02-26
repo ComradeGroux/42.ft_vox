@@ -59,12 +59,20 @@ int	WorldGenerator::_generateColumn(Chunk& chunk, int localX, int localZ, const 
 	int height = (int)glm::min(nonOceanHeight, glm::mix(nonOceanHeight, (float)SEA_LEVEL, totalOceanWeight));
 
 	VoxelType	type;
+	VoxelType	surfaceType = BIOMES[dominantBiome].terrain.ground_type;
+	VoxelType	subSurfaceType = BIOMES[dominantBiome].terrain.ground_depth_type;
+
+	if (height < SEA_LEVEL)
+	{
+		surfaceType = VoxelType::Sand;
+		subSurfaceType = VoxelType::Sand;
+	}
 	for (int y = 0; y <= height; y++)
 	{
 		if (y == height)
-			type = BIOMES[dominantBiome].terrain.ground_type;
+			type = surfaceType;
 		else if (y >= height - BIOMES[dominantBiome].terrain.ground_depth)
-			type = BIOMES[dominantBiome].terrain.ground_depth_type;
+			type = subSurfaceType;
 		else
 			type = VoxelType::Stone;
 
