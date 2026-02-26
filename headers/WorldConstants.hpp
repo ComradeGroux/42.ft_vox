@@ -35,17 +35,13 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 
 
 
-/********************/
-/***  GENERATION  ***/
-/********************/
-constexpr int	TERRAIN_HEIGHT_MIN = 50;
-constexpr int	TERRAIN_HEIGHT_MAX = 150;
-
-
 
 /********************/
 /*****  BIOMES  *****/
 /********************/
+
+constexpr int BLEND_RADIUS = 4;
+constexpr int GRID_SIZE = 16 + 2 * BLEND_RADIUS;
 
 struct TerrainParams {
 	int			octaves;
@@ -54,9 +50,11 @@ struct TerrainParams {
 	float		lacunarity;
 	float		persistence;
 
-	int				ground_depth;		// Nombre de bloc que fait le layer juste sous la surface
-	VoxelType		ground_depth_type;	// Type de bloc du layer juste sous la surface
-	VoxelType		ground_type;		// Type de bloc de la surface
+	int			terrain_min_height;
+	int			terrain_max_height;
+	VoxelType	ground_type;		// Type de bloc de la surface
+	VoxelType	ground_depth_type;	// Type de bloc du layer juste sous la surface
+	int			ground_depth;		// Nombre de bloc que fait le layer juste sous la surface
 };
 
 struct CaveParams {
@@ -72,48 +70,72 @@ struct CaveParams {
 };
 
 struct BiomeParams {
+	float			temperature;
+	float			humidity;
 	TerrainParams	terrain;
 	CaveParams		cave;
 };
 
-constexpr BiomeParams BIOME_DEFAULT = {
+constexpr BiomeParams BIOME_PLAIN = {
+	0.5f,
+	0.6f,
 	{
-		6,		// octaves
-		0.003f,	// frequency
-		1.0f,	// amplitude
-		2.0f,	// lacunarity
-		0.5f,	// persistence
-
-		3,
-		VoxelType::Dirt,
-		VoxelType::Grass
+		6, 0.003f, 1.0f, 2.0f, 0.5f,
+		70, 100,
+		VoxelType::Grass, VoxelType::Dirt, 5
 	},
 	{
-		3,		// octaves
-		0.08f,	// frequency
-		0.1f,	// frequencyY
-		1.0f,	// amplitude
-		2.0f,	// lacunarity
-		0.5f,	// persistence
+		3, 0.08f, 0.1f, 1.0f, 2.0f, 0.5f,
+		0.4f, 0.8f
+	}
+};
 
-		0.4f,	// threshold
-		0.8f	// surfaceRatio
+constexpr BiomeParams BIOME_MOUNTAIN = {
+	0.3f,
+	0.4f,
+	{
+		8, 0.005f, 1.0f, 2.0f, 0.6f,
+		100, 220,
+		VoxelType::Stone, VoxelType::Stone, 3
+	},
+	{
+		3, 0.08f, 0.1f, 1.0f, 2.0f, 0.5f,
+		0.4f, 0.8f
 	}
 };
 
 constexpr BiomeParams BIOME_DESERT = {
+	0.9f,
+	0.1f,
 	{
-		3,		// octaves
-		0.02f,  // frequency
-		0.005f,	// amplitude
-		1.8f,	// lacunarity
-		0.5f,	// persistence
-
-		15,
-		VoxelType::Sand,
-		VoxelType::Sand
+		4, 0.002f, 1.0f, 2.0f, 0.4f,
+		65, 85,
+		VoxelType::Sand, VoxelType::Sand, 8
 	},
 	{
-
+		3, 0.08f, 0.1f, 1.0f, 2.0f, 0.5f,
+		0.4f, 0.8f
 	}
+};
+
+constexpr BiomeParams BIOME_OCEAN = {
+	0.5f,
+	1.0f,
+	{
+		1, 0.001f, 1.0f, 2.0f, 0.4f,
+		62, 64,
+		VoxelType::Water, VoxelType::Water, 15
+	},
+	{
+		3, 0.08f, 0.1f, 1.0f, 2.0f, 0.5f,
+		0.4f, 0.8f
+	}
+};
+
+constexpr int	NUMBER_BIOME = 4;
+constexpr std::array<BiomeParams, NUMBER_BIOME> BIOMES = {
+	BIOME_PLAIN,
+	BIOME_MOUNTAIN,
+	BIOME_DESERT,
+	BIOME_OCEAN
 };

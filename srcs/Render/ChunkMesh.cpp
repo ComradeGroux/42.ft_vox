@@ -113,6 +113,8 @@ bool	ChunkMesh::_isSolid(const Chunk& chunk, int x, int y, int z, const Neighbor
 {
 	if (y < 0 || y >= 256)
 		return false;
+	// if (chunk.get(x, y, z) == VoxelType::Water)
+	// 	return false;
 
 	if (x < 0)
 		return neighbors.nx && neighbors.nx->get(x + 16, y, z) != VoxelType::Air;

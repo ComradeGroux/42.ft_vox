@@ -28,7 +28,7 @@ struct GameContext {
 
 	GameContext(uint64_t seed) :
 		world(seed),
-		camera(glm::vec3(0.0f, 160.0f, 0.0f), -90.0f, 0.0f),
+		camera(glm::vec3(0.0f, 120.0f, 0.0f), -90.0f, 0.0f),
 		inputManager(camera),
 		shader("shaders/chunk.vert", "shaders/chunk.frag"),
 		texture("textures/atlas.png"),
@@ -104,8 +104,8 @@ static void	render(GLFWwindow* window, GameContext& context)
 		if (!mesh || mesh->isEmpty())
 			continue;
 
-		glm::vec3 min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f,   chunk->getChunkZ() * 16.0f);
-		glm::vec3 max = glm::vec3(min.x + 16.0f,              256.0f, min.z + 16.0f);
+		glm::vec3 min = glm::vec3(chunk->getChunkX() * 16.0f, 0.0f, chunk->getChunkZ() * 16.0f);
+		glm::vec3 max = glm::vec3(min.x + 16.0f, 256.0f, min.z + 16.0f);
 		if (!context.frustum.isBoxVisible(min, max))
 			continue;
 
@@ -170,9 +170,6 @@ int main(int argc, char** argv)
 		cgl(glEnable(GL_DEPTH_TEST));
 		cgl(glEnable(GL_CULL_FACE));
 		cgl(glCullFace(GL_BACK));
-
-		// cgl(glDisable(GL_CULL_FACE));
-
 
 		gameLoop(window, context);
 	}
