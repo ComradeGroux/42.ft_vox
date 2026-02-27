@@ -15,5 +15,5 @@ class Skybox {
 		Skybox(const std::string& vertexPath, const std::string& fragmentPath);
 		~Skybox(void);
 
-		void	draw(const glm::mat4& view, const glm::mat4& projection) const;
+		void	draw(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& lightDir, const float& lightIntensity) const;
 };

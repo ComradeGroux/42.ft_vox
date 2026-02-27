@@ -67,7 +67,7 @@ Skybox::~Skybox(void)
 	cgl(glDeleteBuffers(1, &_ebo));
 }
 
-void	Skybox::draw(const glm::mat4& view, const glm::mat4& projection) const
+void	Skybox::draw(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& lightDir, const float& lightIntensity) const
 {
 	cgl(glDisable(GL_CULL_FACE));
 	cgl(glDepthFunc(GL_LEQUAL));
@@ -75,6 +75,8 @@ void	Skybox::draw(const glm::mat4& view, const glm::mat4& projection) const
 	_shader.use();
 	_shader.setMat4("uView", view);
 	_shader.setMat4("uProjection", projection);
+	_shader.setVec3("uLightDir", lightDir);
+	_shader.setFloat("uLightIntensity", lightIntensity);
 
 	cgl(glBindVertexArray(_vao));
 	cgl(glDrawElements(GL_TRIANGLES, 6 * 2 * 3, GL_UNSIGNED_INT, 0));

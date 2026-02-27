@@ -16,6 +16,8 @@ constexpr float FAR_PLANE  = (RENDER_DISTANCE * 1.5) * 16;
 constexpr GLsizei	TEXTURE_SIZE = 16;
 constexpr GLsizei	ATLAS_SIZE = 256;
 
+constexpr float	DAY_SPEED = 0.1f;
+
 
 /********************/
 /*****  INPUTS  *****/
@@ -40,7 +42,7 @@ constexpr float MOUSE_SENSITIVITY = 0.1f;
 /*****  BIOMES  *****/
 /********************/
 
-constexpr int	BLEND_RADIUS = 8;
+constexpr int	BLEND_RADIUS = 16;
 constexpr int	GRID_SIZE = 16 + 2 * BLEND_RADIUS;
 constexpr int	SEA_LEVEL = 64;
 

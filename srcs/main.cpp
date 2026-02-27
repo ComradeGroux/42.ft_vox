@@ -25,6 +25,7 @@ struct GameContext {
 	Texture			texture;
 	Skybox			skybox;
 	Frustum			frustum;
+	float			timeOfDay;
 
 	GameContext(uint64_t seed) :
 		world(seed),
@@ -33,7 +34,8 @@ struct GameContext {
 		shader("shaders/chunk.vert", "shaders/chunk.frag"),
 		texture("textures/atlas.png"),
 		skybox("shaders/skybox.vert", "shaders/skybox.frag"),
-		frustum()
+		frustum(),
+		timeOfDay(0.0f)
 	{}
 };
 
@@ -125,7 +127,16 @@ static void	renderWater(GameContext& context)
 	glDisable(GL_BLEND);
 }
 
-static void	render(GLFWwindow* window, GameContext& context)
+static glm::vec3	updateLightDir(GameContext& context, float deltaTime)
+{
+	glm::vec3		baseDir(0.0, -1.0, 0.0);
+
+	context.timeOfDay += deltaTime * DAY_SPEED;
+	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), context.timeOfDay, glm::vec3(0.0f, 0.0f, 1.0f));
+    return glm::normalize(glm::vec3(rotation * glm::vec4(baseDir, 0.0f)));
+}
+
+static void	render(GLFWwindow* window, GameContext& context, float deltaTime)
 {
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -134,13 +145,19 @@ static void	render(GLFWwindow* window, GameContext& context)
 	glm::mat4	view = context.camera.getViewMatrix();
 	glm::mat4	projection = context.camera.getProjectionMatrix(aspectRatio);
 
-	context.skybox.draw(view, projection);
+	glm::vec3	lightDir = updateLightDir(context, deltaTime);
+	float lightIntensity = glm::clamp(-lightDir.y, 0.0f, 1.0f);
+	lightIntensity = glm::smoothstep(0.0f, 0.3f, lightIntensity);
+
+	context.skybox.draw(view, projection, lightDir, lightIntensity);
 
 	context.texture.bind(0);
 	context.shader.use();
 	context.shader.setMat4("uView", view);
 	context.shader.setMat4("uProjection", projection);
 	context.shader.setInt("uAtlas", 0);
+	context.shader.setVec3("uLightDir", lightDir);
+	context.shader.setFloat("uLightIntensity", lightIntensity);
 
 	context.frustum.update(view, projection);
 
@@ -150,8 +167,8 @@ static void	render(GLFWwindow* window, GameContext& context)
 
 static void	gameLoop(GLFWwindow *window, GameContext& context)
 {
-	float	lastTime  = 0.0f;
-	float	deltaTime = 0.0f;
+	float		lastTime  = 0.0f;
+	float		deltaTime = 0.0f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -168,11 +185,10 @@ static void	gameLoop(GLFWwindow *window, GameContext& context)
 		cgl(glClearColor(0.529f, 0.808f, 0.922f, 1.0f));
 		cgl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		render(window, context);
+		render(window, context, deltaTime);
 
 		glfwSwapBuffers(window);
 	}
-	render(window, context);
 }
 
 int main(int argc, char** argv)
